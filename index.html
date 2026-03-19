@@ -215,6 +215,8 @@
             <span class="badge" data-vendor="zendesk">Zendesk</span>
             <span class="badge" data-vendor="hubspot">HubSpot</span>
             <span class="badge" data-vendor="intercom">Intercom</span>
+            <span class="badge" data-vendor="workday">Workday</span>
+            <span class="badge" data-vendor="successfactors">SAP SuccessFactors</span>
           </div>
           <div class="app-col">
             <b>Systems of Execution</b>
@@ -255,6 +257,7 @@
           <span class="badge" data-vendor="databricks">Databricks</span>
           <span class="badge" data-vendor="segment">Segment</span>
           <span class="badge" data-vendor="tealium">Tealium</span>
+          <span class="badge" data-vendor="atlan">Atlan</span>
           <span class="badge msft-badge" data-vendor="fabric">Fabric</span>
         </div>
         <div><div class="pill partner">Partner</div></div>
@@ -341,6 +344,26 @@ const layerData = {
 };
 
 const vendorData = {
+  workday:{title:'Workday',body:'Workday is a system of record for employee data, roles, org structure, skills, and workforce processes. In the enterprise stack it represents authoritative employee and workforce context.',partnership:{why:'Cisco should partner with Workday because workforce-aware CX depends on understanding the employee side of the interaction model, not just the customer side. Workday can provide trusted employee context that improves routing, workforce decisions, and human + AI collaboration.',combined:'Workday understands the employee. Cisco understands the interaction.',specifics:['Use Workday data to enrich workforce-aware routing and assignment.','Incorporate org structure, role, and skill context into human + AI workflows.','Connect workforce state to service delivery and agent experiences.','Support broader employee experience and workforce transformation conversations.'],positioning:'Workday is the system of employee truth. Cisco is the system of interaction execution.',compete:'Some overlap may emerge in workforce experience and workflow adjacencies, but the relationship is primarily complementary.',gtm:'Best motion is with enterprises linking workforce transformation, skills, and employee context to CX and service execution.'}},
+  successfactors:{title:'SAP SuccessFactors',body:'SAP SuccessFactors is a workforce and HR system of record for employee profiles, skills, organizational data, talent processes, and workforce operations. It represents authoritative employee context in SAP-centric enterprises.',partnership:{why:'Cisco should partner with SAP SuccessFactors because employee-aware CX and service operations increasingly depend on workforce data, skill context, and organizational structure.',combined:'SuccessFactors manages employee and workforce state. Cisco uses that state to improve interaction outcomes.',specifics:['Use workforce and skills data to improve routing and workforce decisions.','Connect employee context to human + AI collaboration models.','Support SAP-centric enterprises without forcing a rip-and-replace motion.','Expand the CX story into employee and workforce intelligence.'],positioning:'SuccessFactors is the employee system of record. Cisco should operationalize that context in real-time interactions.',compete:'Direct competition is limited; the main overlap is in adjacent employee experience narratives.',gtm:'Best motion is in SAP-centric accounts where employee context, skills, and workforce transformation connect directly to service and interaction quality.'}},
+
+  atlan: {
+    title: 'Atlan',
+    body: 'Atlan is a modern data workspace and governance platform that helps teams discover, catalog, and collaborate on enterprise data assets.',
+    partnership: {
+      why: 'Cisco should partner with Atlan because trusted, governed data is critical for AI-driven CX. Atlan ensures the right data is discoverable and usable.',
+      combined: 'Atlan governs and surfaces trusted data. Cisco activates it in real-time interactions.',
+      specifics: [
+        'Ensure data used in CX is governed and reliable.',
+        'Enable better collaboration between data and CX teams.',
+        'Reduce risk of incorrect or untrusted data in interactions.',
+        'Support AI readiness through strong data foundations.'
+      ],
+      positioning: 'Atlan ensures trusted data. Cisco ensures that data drives better interactions.',
+      compete: 'Minimal direct competition; mostly complementary.',
+      gtm: 'Best suited for data-mature enterprises investing in governance and AI readiness.'
+    }
+  },
   whatsapp:{title:'WhatsApp',body:'WhatsApp is a major digital engagement channel used for conversational customer interactions.',partnership:{why:'Cisco should support WhatsApp because customers expect brands to be reachable on the channels they already use.',combined:'WhatsApp provides reach. Cisco provides orchestration and enterprise CX on top of it.',specifics:['Support messaging interactions on popular channels.','Maintain conversation continuity across channels.','Bring AI and routing into channel-native journeys.','Avoid forcing customers into proprietary channels only.'],positioning:'Channels matter, but the differentiation is in what happens on top of them.',compete:'Limited direct competition; this is primarily a channel partnership dynamic.',gtm:'Go to market by meeting customers where their users already are.'}},
   'apple-messages':{title:'Apple Messages',body:'Apple Messages is a consumer messaging channel relevant for brand communication and customer engagement.',partnership:{why:'Cisco should support Apple messaging surfaces where customers want high-quality mobile engagement experiences.',combined:'Apple provides channel access. Cisco provides orchestration and service logic.',specifics:['Enable native mobile engagement.','Support seamless conversation continuity.','Tie channel interactions to enterprise workflows.','Maintain consistent orchestration across channels.'],positioning:'Cisco should own the orchestration, not just the endpoint.',compete:'Very limited direct competition.',gtm:'Use channel support as part of broader omnichannel credibility.'}},
   'google-rcs':{title:'Google RCS',body:'Google RCS is a modern messaging channel that supports richer customer communication experiences than traditional SMS.',partnership:{why:'Cisco should support RCS as part of an enterprise omnichannel strategy.',combined:'RCS provides reach and rich messaging. Cisco provides orchestration and CX control.',specifics:['Support rich mobile messaging journeys.','Link channel events to workflows and customer context.','Maintain cross-channel continuity.','Use richer messaging to improve service and sales interactions.'],positioning:'Channel access is table stakes; orchestration is the value.',compete:'Minimal direct competition.',gtm:'Position RCS support as part of a complete omnichannel story.'}},
