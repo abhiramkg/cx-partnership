@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Enterprise Stack</title>
+<style>
+  :root {
+    --bg:#0b1020;
+    --panel:rgba(255,255,255,0.04);
+    --line:rgba(255,255,255,0.08);
+    --text:#eef2ff;
+    --muted:#b8c1e0;
+    --msft:#3b82f6;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--text); }
+  .slide { width:1600px; height:900px; margin:0 auto; padding:40px; }
+  h1 { font-size:40px; margin:0; }
+  .subtitle { color:var(--muted); margin-top:10px; }
+  .toolbar { display:flex; align-items:center; gap:12px; margin-top:14px; }
+  .toggle-wrap { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px; }
+  .switch { position:relative; display:inline-block; width:48px; height:28px; }
+  .switch input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,0.14); border:1px solid var(--line); transition:.2s; border-radius:999px; }
+  .slider:before { position:absolute; content:''; height:20px; width:20px; left:4px; top:3px; background:white; transition:.2s; border-radius:50%; }
+  .switch input:checked + .slider { background:rgba(59,130,246,0.45); }
+  .switch input:checked + .slider:before { transform:translateX(20px); }
+  .msft-note { display:none; font-size:12px; color:#93c5fd; }
+  .msft-on .msft-note { display:block; }
+
+  .content { display:grid; grid-template-columns:1fr 520px; gap:20px; margin-top:20px; min-height:calc(100% - 140px); }
+  .stack { display:grid; grid-auto-rows:auto; gap:10px; min-height:0; }
+  .layer {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    display:grid;
+    grid-template-columns:1.15fr 1.5fr 0.55fr;
+    gap:12px;
+    cursor:pointer;
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    min-height:110px;
+  }
+  }
+  }
+  .layer:hover { transform:translateY(-1px); border-color:rgba(255,255,255,0.18); }
+  .layer.active {
+    border-color:rgba(245,158,11,0.65);
+    box-shadow:0 0 0 2px rgba(245,158,11,0.18), 0 10px 24px rgba(0,0,0,0.24);
+    background:rgba(255,255,255,0.06);
+  }
+  .layer h2 { margin:0; font-size:18px; }
+  .desc { font-size:13px; color:var(--muted); }
+  .app-columns {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    align-content:start;
+  }
+  .layer[data-layer="applications"] {
+    min-height:240px;
+  }
+  .layer[data-layer="applications"] .app-col {
+    min-height:180px;
+  }
+  .layer[data-layer="experience"] {
+    min-height:180px;
+  }
+  .layer[data-layer="experience"] .app-col {
+    min-height:140px;
+  }
+  .layer[data-layer="applications"] .app-col {
+    min-height:140px;
+  }
+  .experience-columns { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start; }
+  .app-col { background:rgba(255,255,255,0.05); border:1px solid var(--line); border-radius:10px; padding:8px; min-width:0; }
+  .app-col b { font-size:11px; display:block; margin-bottom:6px; color:#c7d2fe; }
+  .badge {
+    display:inline-block;
+    margin:3px 4px;
+    padding:4px 7px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.08);
+    font-size:11px;
+    cursor:pointer;
+    transition:background .16s ease, transform .16s ease;
+  }
+  .badge:hover { background:rgba(255,255,255,0.16); transform:translateY(-1px); }
+  .badge.selected { background:rgba(245,158,11,0.22); outline:1px solid rgba(245,158,11,0.45); }
+  .msft-badge { display:none; }
+  .msft-on .msft-badge { display:inline-block; }
+  .msft-highlight { background:rgba(59,130,246,0.22) !important; outline:1px solid rgba(96,165,250,0.5); color:#dbeafe; }
+
+  .pill { padding:8px 12px; border-radius:12px; font-size:12px; display:inline-block; margin-bottom:6px; font-weight:700; letter-spacing:0.02em; }
+  .own { background:#16a34a; color:white; }
+  .partner { background:#2563eb; color:white; }
+
+  .right { display:grid; grid-template-rows:auto 1fr; gap:16px; min-height:0; }
+  .top-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .card {
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    overflow:auto;
+    min-height:0;
+  }
+  .card h4 { margin:0 0 6px 0; font-size:16px; }
+  .card p, .card li { color:var(--muted); font-size:13px; line-height:1.35; margin:4px 0; }
+  .card ul { margin:8px 0 0 18px; padding:0; }
+  .detail-title { color:#fff; font-weight:700; margin:6px 0 4px 0; font-size:13px; }
+  .section-grid {
+    display:grid;
+    grid-template-rows:auto 1fr;
+    gap:10px;
+    min-height:0;
+  }
+  .two-col {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:10px;
+    align-items:start;
+  }
+  .two-col {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:10px;
+  }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+  .subcard { background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:10px; min-height:0; overflow:auto; }
+</style>
+</head>
+<body class="locked">
+<div id="auth-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#11172b;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px 28px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="font-size:18px;font-weight:600;margin-bottom:10px;">🔒 Access</div>
+    <div style="font-size:13px;color:#b8c1e0;margin-bottom:16px;">Enter password to continue</div>
+    <input id="auth-pass" type="password" placeholder="Password" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:#0b1020;color:#fff;margin-bottom:12px;" />
+    <button id="auth-btn" style="width:100%;padding:10px;border-radius:8px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;">Enter</button>
+    <div id="auth-error" style="color:#f87171;font-size:12px;margin-top:10px;display:none;">Incorrect password</div>
+  </div>
+</div>
+<script>
+(function(){
+  const correct = 'abhi';
+  const btn = document.getElementById('auth-btn');
+  const input = document.getElementById('auth-pass');
+  const err = document.getElementById('auth-error');
+  function unlock(){
+    document.body.classList.remove('locked');
+    const overlay = document.getElementById('auth-overlay');
+    if(overlay) overlay.remove();
+  }
+  btn.addEventListener('click', () => {
+    if(input.value === correct){ unlock(); }
+    else { err.style.display='block'; }
+  });
+  input.addEventListener('keypress', (e)=>{
+    if(e.key === 'Enter') btn.click();
+  });
+})();
+</script>
+<div class="slide">
+  <h1>CX - Strategy and Partnership</h1>
+  <div class="subtitle">Framework for evaluating partnerships for our CX portfolio</div>
+  <div class="toolbar">
+    <div class="toggle-wrap">
+      <span>Show Microsoft positioning</span>
+      <label class="switch">
+        <input type="checkbox" id="msft-toggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="msft-note" id="msft-note">Microsoft spans multiple layers: Teams, Teams Phone, Dynamics 365, Power Automate, Fabric, Azure OpenAI, Logic Apps, and Azure.</div>
+  </div>
+
+  <div class="content">
+    <div class="stack">
+      <div class="layer" data-layer="experience">
+        <div><h2>Experience Layer</h2><div class="desc">Channels + Front-end AI agents</div></div>
+        <div class="experience-columns">
+          <div class="app-col">
+            <b>Channels</b>
+            <span class="badge" data-vendor="whatsapp">WhatsApp</span>
+            <span class="badge" data-vendor="apple-messages">Apple Messages</span>
+            <span class="badge" data-vendor="google-rcs">Google RCS</span>
+            <span class="badge" data-vendor="web">Web</span>
+            <span class="badge" data-vendor="mobile-apps">Mobile Apps</span>
+          </div>
+          <div class="app-col">
+            <b>AI Agents</b>
+            <span class="badge" data-vendor="sierra-ai">Sierra AI</span>
+            <span class="badge" data-vendor="decagon">Decagon</span>
+            <span class="badge" data-vendor="cresta">Cresta</span>
+          </div>
+        </div>
+        <div><div class="pill own">Own</div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer active" data-layer="applications">
+        <div>
+          <h2>Applications Layer</h2>
+          <div class="desc">Systems of record, execution, and industry core systems</div>
+        </div>
+        <div class="app-columns">
+          <div class="app-col">
+            <b>Systems of Record</b>
+            <span class="badge" data-vendor="salesforce">Salesforce</span>
+            <span class="badge" data-vendor="servicenow">ServiceNow</span>
+            <span class="badge msft-badge" data-vendor="dynamics-365">Dynamics 365</span>
+            <span class="badge" data-vendor="zendesk">Zendesk</span>
+            <span class="badge" data-vendor="hubspot">HubSpot</span>
+            <span class="badge" data-vendor="intercom">Intercom</span>
+          </div>
+          <div class="app-col">
+            <b>Systems of Execution</b>
+            <span class="badge" data-vendor="stripe">Stripe</span>
+            <span class="badge" data-vendor="docusign">DocuSign</span>
+            <span class="badge" data-vendor="shopify">Shopify</span>
+            <span class="badge" data-vendor="twilio">Twilio</span>
+            <span class="badge" data-vendor="paypal">PayPal</span>
+            <span class="badge" data-vendor="square">Square</span>
+          </div>
+          <div class="app-col">
+            <b>Industry Core</b>
+            <span class="badge" data-vendor="epic">EPIC</span>
+            <span class="badge" data-vendor="cerner">Cerner</span>
+            <span class="badge" data-vendor="guidewire">Guidewire</span>
+            <span class="badge" data-vendor="temenos">Temenos</span>
+          </div>
+        </div>
+        <div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer" data-layer="automation">
+        <div><h2>Automation Layer</h2><div class="desc">Execution engines</div></div>
+        <div>
+          <span class="badge" data-vendor="uipath">UiPath</span>
+          <span class="badge" data-vendor="automation-anywhere">Automation Anywhere</span>
+          <span class="badge" data-vendor="blue-prism">Blue Prism</span>
+          <span class="badge" data-vendor="pega">Pega</span>
+          <span class="badge msft-badge" data-vendor="power-automate">Power Automate</span>
+        </div>
+        <div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer" data-layer="data">
+        <div><h2>Data Layer</h2><div class="desc">Context + knowledge</div></div>
+        <div>
+          <span class="badge" data-vendor="snowflake">Snowflake</span>
+          <span class="badge" data-vendor="databricks">Databricks</span>
+          <span class="badge" data-vendor="segment">Segment</span>
+          <span class="badge" data-vendor="tealium">Tealium</span>
+          <span class="badge msft-badge" data-vendor="fabric">Fabric</span>
+        </div>
+        <div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer" data-layer="ai">
+        <div><h2>AI + Agent Layer</h2><div class="desc">Models, specialized AI, and agent providers</div></div>
+        <div>
+          <span class="badge" data-vendor="openai">OpenAI</span>
+          <span class="badge" data-vendor="anthropic">Anthropic</span>
+          <span class="badge" data-vendor="gemini">Google Gemini</span>
+          <span class="badge" data-vendor="deepgram">Deepgram</span>
+          <span class="badge msft-badge" data-vendor="azure-openai">Azure OpenAI</span>
+          <span class="badge" data-vendor="adept">Adept</span>
+        </div>
+        <div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer" data-layer="integration">
+        <div><h2>Integration Layer</h2><div class="desc">APIs + connectivity</div></div>
+        <div>
+          <span class="badge" data-vendor="mulesoft">MuleSoft</span>
+          <span class="badge" data-vendor="boomi">Boomi</span>
+          <span class="badge" data-vendor="workato">Workato</span>
+          <span class="badge" data-vendor="zapier">Zapier</span>
+          <span class="badge msft-badge" data-vendor="logic-apps">Logic Apps</span>
+        </div>
+        <div><div class="pill partner">Partner</div></div>
+      </div>
+
+      <div class="layer" data-layer="infra">
+        <div><h2>Infra + Security</h2><div class="desc">Foundation</div></div>
+        <div>
+          <span class="badge" data-vendor="cisco">Cisco</span>
+          <span class="badge" data-vendor="splunk">Splunk</span>
+          <span class="badge" data-vendor="aws">AWS</span>
+          <span class="badge msft-badge" data-vendor="azure">Azure</span>
+          <span class="badge" data-vendor="gcp">GCP</span>
+        </div>
+        <div><div class="pill own">Own</div></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="top-row">
+        <div class="card">
+          <h4>Selected Layer</h4>
+          <div id="layer-detail"></div>
+        </div>
+        <div class="card">
+          <h4>Selected Vendor</h4>
+          <div id="vendor-detail"><p>Click a vendor badge to see the partnership view</p></div>
+        </div>
+      </div>
+      <div class="card section-grid">
+        <div>
+          <h4>Partnership View</h4>
+          <div id="partner-detail"><p>Click on a vendor badge to see the partnership view</p></div>
+          <div class="two-col">
+            <div class="subcard">
+              <h4>Where we still compete</h4>
+              <div id="compete-detail"><p>Click on a vendor badge to see the partnership view</p></div>
+            </div>
+            <div class="subcard">
+              <h4>Go-to-market motion</h4>
+              <div id="gtm-detail"><p>Click on a vendor badge to see the partnership view</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const layerData = {
+  experience: { title: 'Experience Layer', body: 'This is where the brand is experienced. Cisco should own the front door and orchestrate interactions, while partnering for channel reach and front-end agent ecosystems.' },
+  applications: { title: 'Applications Layer', body: 'This layer includes systems of record, systems of execution, and industry core systems. Cisco should partner deeply here and differentiate by orchestrating across all three in real time.' },
+  automation: { title: 'Automation Layer', body: 'This is where work gets done. Cisco should not try to replace execution engines; it should become the best runtime to invoke them from conversations.' },
+  data: { title: 'Data Layer', body: 'This layer supplies context. The goal is not to centralize everything, but to activate distributed context fast enough to drive better interactions.' },
+  ai: { title: 'AI + Agent Layer', body: 'This is the intelligence fabric: models, speech, reasoning, and standalone agent providers. Cisco should stay multi-model and differentiate through governance, routing, and enterprise controls.' },
+  integration: { title: 'Integration Layer', body: 'Integration moves data and events across systems. Cisco should partner here, but differentiate above it through real-time conversational orchestration.' },
+  infra: { title: 'Infra + Security', body: 'This is Cisco’s natural strength. The right to win comes from trust, observability, resilience, and AI security controls underneath the experience.' }
+};
+
+const vendorData = {
+  whatsapp:{title:'WhatsApp',body:'WhatsApp is a major digital engagement channel used for conversational customer interactions.',partnership:{why:'Cisco should support WhatsApp because customers expect brands to be reachable on the channels they already use.',combined:'WhatsApp provides reach. Cisco provides orchestration and enterprise CX on top of it.',specifics:['Support messaging interactions on popular channels.','Maintain conversation continuity across channels.','Bring AI and routing into channel-native journeys.','Avoid forcing customers into proprietary channels only.'],positioning:'Channels matter, but the differentiation is in what happens on top of them.',compete:'Limited direct competition; this is primarily a channel partnership dynamic.',gtm:'Go to market by meeting customers where their users already are.'}},
+  'apple-messages':{title:'Apple Messages',body:'Apple Messages is a consumer messaging channel relevant for brand communication and customer engagement.',partnership:{why:'Cisco should support Apple messaging surfaces where customers want high-quality mobile engagement experiences.',combined:'Apple provides channel access. Cisco provides orchestration and service logic.',specifics:['Enable native mobile engagement.','Support seamless conversation continuity.','Tie channel interactions to enterprise workflows.','Maintain consistent orchestration across channels.'],positioning:'Cisco should own the orchestration, not just the endpoint.',compete:'Very limited direct competition.',gtm:'Use channel support as part of broader omnichannel credibility.'}},
+  'google-rcs':{title:'Google RCS',body:'Google RCS is a modern messaging channel that supports richer customer communication experiences than traditional SMS.',partnership:{why:'Cisco should support RCS as part of an enterprise omnichannel strategy.',combined:'RCS provides reach and rich messaging. Cisco provides orchestration and CX control.',specifics:['Support rich mobile messaging journeys.','Link channel events to workflows and customer context.','Maintain cross-channel continuity.','Use richer messaging to improve service and sales interactions.'],positioning:'Channel access is table stakes; orchestration is the value.',compete:'Minimal direct competition.',gtm:'Position RCS support as part of a complete omnichannel story.'}},
+  web:{title:'Web',body:'Web is a core brand-owned interaction surface for self-service, chat, and digital engagement.',partnership:{why:'Cisco should fully support web because it remains one of the most important first-party customer experience surfaces.',combined:'The web provides direct reach. Cisco provides intelligence, routing, and continuity on top of it.',specifics:['Embed chat and AI experiences on web properties.','Carry context between web and assisted channels.','Use web as part of front-door control.','Connect web interactions to systems and workflows.'],positioning:'Owned digital surfaces matter most when connected to a broader orchestration layer.',compete:'Competition exists with vendors trying to own embedded web engagement.',gtm:'Lead with front-door control on first-party surfaces.'}},
+  'mobile-apps':{title:'Mobile Apps',body:'Mobile apps are first-party engagement surfaces where brands can deliver persistent, context-rich customer experiences.',partnership:{why:'Cisco should support mobile app interactions because they are a critical owned channel for modern customer journeys.',combined:'The app is the brand surface. Cisco provides orchestration, AI, and continuity within it.',specifics:['Embed conversational experiences inside apps.','Use app context to personalize journeys.','Link app activity to assisted support and back-end workflows.','Maintain end-to-end conversation continuity.'],positioning:'The app is the surface; Cisco should be the intelligence and orchestration behind it.',compete:'Competition exists with engagement vendors embedding directly into apps.',gtm:'Lead with owned-channel experience transformation.'}},
+  teams:{title:'Teams',body:'Teams is Microsoft’s collaboration and communication surface. In the stack it acts as an interaction entry point for employee and customer-adjacent experiences.',partnership:{why:'Cisco should account for Teams because many enterprises already use it as a daily interaction surface. The goal is not to replace every endpoint, but to ensure Cisco can orchestrate around Microsoft-heavy environments.',combined:'Teams is a collaboration surface. Cisco should remain the CX interaction and orchestration layer.',specifics:['Recognize Teams as a meaningful interaction surface in Microsoft accounts.','Position Cisco around richer CX, service, AI, and orchestration needs.','Work cleanly in environments where collaboration and CX coexist.','Use Microsoft compatibility as credibility, not capitulation.'],positioning:'Microsoft owns major collaboration surfaces. Cisco should own the CX runtime across them.',compete:'There is direct competition at the communication and experience surface layer.',gtm:'Best motion is coexistence in Microsoft-centric accounts, with Cisco differentiated on enterprise CX and orchestration.'}},
+  'teams-phone':{title:'Teams Phone',body:'Teams Phone extends Microsoft into enterprise calling and voice experiences. It is relevant wherever customers are standardizing end-user communication on Microsoft.',partnership:{why:'Cisco should account for Teams Phone because voice surfaces increasingly converge with collaboration estates. The strategic goal is to interoperate where needed while differentiating in CX depth.',combined:'Teams Phone handles enterprise calling surfaces. Cisco focuses on customer experience orchestration and service outcomes.',specifics:['Support accounts where collaboration and CX voice layers intersect.','Differentiate on contact center, AI, routing, and enterprise service orchestration.','Position Cisco above or adjacent to collaboration telephony where appropriate.','Avoid forcing customers into binary choices where coexistence is more realistic.'],positioning:'Teams Phone is not the full CX stack. Cisco should reinforce that distinction.',compete:'Competition exists in voice, calling, and some customer interaction adjacencies.',gtm:'Use coexistence and overlay motions in Microsoft-heavy communication environments.'}},
+  'sierra-ai':{title:'Sierra AI',body:'Sierra AI is a front-end AI agent provider focused on autonomous customer interactions and experience delivery.',partnership:{why:'Cisco should partner with Sierra where customers experiment with front-end agents but still need enterprise orchestration.',combined:'Sierra provides agent experience. Cisco provides orchestration and control.',specifics:['Integrate Sierra agents into CX flows.','Apply governance and routing.','Combine with enterprise data and systems.','Ensure consistency across channels and agents.'],positioning:'Agents are the front-end. Cisco is the control plane.',compete:'High overlap risk if agent providers expand into full CX platforms.',gtm:'Position Cisco as the orchestration layer across all agents including Sierra.'}},
+  decagon:{title:'Decagon',body:'Decagon builds AI-powered customer support agents focused on automation and resolution.',partnership:{why:'Cisco should partner to incorporate specialized support agents.',combined:'Decagon provides support automation. Cisco orchestrates across channels and systems.',specifics:['Embed support agents into CX.','Combine with enterprise context.','Orchestrate escalation paths.','Ensure consistency across journeys.'],positioning:'Decagon is a specialized agent layer. Cisco is the platform.',compete:'Overlap in automation and support experience.',gtm:'Partner where customers want best-of-breed AI agents but need enterprise orchestration.'}},
+  cresta:{title:'Cresta',body:'Cresta provides AI for real-time agent assistance, coaching, and augmentation.',partnership:{why:'Cisco should partner where Cresta enhances human agents.',combined:'Cresta augments agents. Cisco orchestrates the interaction.',specifics:['Enhance agent productivity.','Integrate insights into CX flows.','Combine AI assistance with orchestration.','Improve quality and outcomes.'],positioning:'Cresta enhances agents. Cisco controls the system.',compete:'Overlap in AI-assisted agent experiences.',gtm:'Joint motion in enterprises focused on agent productivity and AI augmentation.'}},
+  salesforce:{title:'Salesforce',body:'Salesforce is a customer system of record. It holds customer profile, account history, case state, service entitlements, workflow status, and business context that are often essential during a service or sales interaction.',partnership:{why:'Cisco should partner with Salesforce because Salesforce often owns the truth about the customer, while Cisco owns the real-time interaction. The value is bringing Salesforce context into the live conversation and writing the outcome back.',combined:'Salesforce stores intent and state. Cisco executes and orchestrates the interaction.',specifics:['Context access: profile, history, entitlements, and open cases.','Workflow synchronization: create, update, and enrich cases during the interaction.','AI + data fusion: combine CRM data with live interaction signals for better routing and resolution.','Co-sell motion: Salesforce is strategic with business buyers; Cisco adds the interaction, orchestration, and trust story.'],positioning:'Without Salesforce, CX lacks context. Without Cisco, Salesforce lacks real-time execution.',compete:'Salesforce still competes through Service Cloud Voice, Einstein, and broader ambitions in AI-led service orchestration.',gtm:'Best motion is joint enterprise selling: Salesforce leads with CRM and business transformation, while Cisco leads with interaction, orchestration, trust, and operational scale.'}},
+  servicenow:{title:'ServiceNow',body:'ServiceNow is a workflow and service operations platform. It manages incidents, requests, approvals, enterprise knowledge, and operational processes across IT, employee, and customer experiences.',partnership:{why:'Cisco should partner with ServiceNow because it often holds the workflow backbone behind a service interaction. Cisco can front-end the interaction while ServiceNow remains the operational engine behind the scenes.',combined:'ServiceNow manages workflow state. Cisco manages the interaction layer.',specifics:['Use ServiceNow for incident, request, and case orchestration.','Use Cisco for voice, chat, AI agent, and human escalation experiences.','Fuse ServiceNow knowledge with live customer context.','Close the loop by updating ServiceNow from the interaction.'],positioning:'ServiceNow is the workflow system. Cisco is the conversational runtime that activates it.',compete:'ServiceNow increasingly extends into employee and customer experience layers, which can overlap with orchestration and self-service ambitions.',gtm:'Joint motion works best where ServiceNow is already the workflow backbone and Cisco becomes the front-end interaction and AI execution layer.'}},
+  'dynamics-365':{title:'Dynamics 365',body:'Dynamics 365 is Microsoft’s business applications suite spanning CRM, customer service, field service, sales, and operational workflows. In many Microsoft-centric enterprises it is the system of record for customer and service state.',partnership:{why:'Cisco should partner with Dynamics 365 because it is often deeply embedded in Microsoft estates and holds essential customer and workflow context needed during interactions.',combined:'Dynamics holds customer and service state. Cisco provides the live interaction and orchestration layer.',specifics:['Pull account, case, and workflow context into conversations.','Update records and cases from agent and AI interactions.','Combine with Teams, Azure, and Microsoft data environments where customers already standardize.','Position Cisco as additive rather than disruptive in Microsoft-heavy accounts.'],positioning:'Microsoft may span the stack, but Cisco can still own the interaction runtime across it.',compete:'Competition exists because Microsoft also pushes into collaboration, AI, workflow, and customer service experience layers.',gtm:'Best motion is to sell Cisco as the best interaction and orchestration layer for customers already standardized on Microsoft business apps.'}},
+  zendesk:{title:'Zendesk',body:'Zendesk is a customer support platform focused on ticketing, agent workflows, help center content, and digital service operations. It is commonly used as a lighter-weight system of record for service teams.',partnership:{why:'Cisco should partner with Zendesk because many mid-market and digital-first organizations use it as the operational system behind support interactions.',combined:'Zendesk manages tickets and service state. Cisco improves the interaction and orchestration around it.',specifics:['Sync ticket status and customer context into conversations.','Use Cisco for richer voice, AI, and omnichannel orchestration.','Bring AI and workflow continuity to Zendesk-based support models.','Extend Zendesk into more complex enterprise-grade interaction scenarios.'],positioning:'Zendesk owns lightweight support operations. Cisco can elevate the interaction layer around it.',compete:'Overlap exists in digital engagement, messaging, bot, and service workflow experiences.',gtm:'Best motion is with customers that like Zendesk’s support workflow but need stronger enterprise interaction, voice, or AI orchestration.'}},
+  hubspot:{title:'HubSpot',body:'HubSpot is a CRM and go-to-market platform spanning marketing, sales, and service workflows. It often acts as the system of record for smaller or growth-oriented organizations.',partnership:{why:'Cisco should partner with HubSpot where it owns customer lifecycle data and service workflows, especially in fast-growing digital businesses.',combined:'HubSpot holds go-to-market and customer lifecycle context. Cisco adds enterprise-grade interaction and service orchestration.',specifics:['Use HubSpot customer data to personalize interactions.','Write service and sales outcomes back into CRM workflows.','Extend HubSpot environments with stronger omnichannel and AI experiences.','Support scale-up companies needing more mature CX capability without replacing their CRM.'],positioning:'HubSpot is the growth platform. Cisco can become the enterprise interaction layer above it.',compete:'HubSpot has its own service and conversation features, so overlap exists in messaging and digital service.',gtm:'Target digital-native businesses that want to keep HubSpot but need better voice, AI, and orchestration.'}},
+  intercom:{title:'Intercom',body:'Intercom is a customer messaging and support platform focused on in-app messaging, chat, bots, and customer engagement workflows. It often acts as a lightweight service and engagement layer in digital-first companies.',partnership:{why:'Cisco should partner with Intercom where it is the primary engagement layer for digital-native or product-led companies, especially in chat-first environments.',combined:'Intercom manages messaging workflows and engagement. Cisco can extend into enterprise-grade orchestration, voice, and AI.',specifics:['Use Intercom context to enrich conversations.','Extend chat-first support into full omnichannel CX.','Bring enterprise-grade AI, routing, and orchestration.','Position Cisco as the scale and enterprise layer above Intercom.'],positioning:'Intercom owns lightweight engagement. Cisco should own enterprise-grade orchestration.',compete:'Overlap exists in messaging, bots, and customer engagement flows.',gtm:'Best motion is with digital-native companies scaling beyond Intercom’s native capabilities into more complex CX needs.'}},
+  stripe:{title:'Stripe',body:'Stripe is a system of execution for payments, subscriptions, billing, refunds, payouts, and transaction workflows. It is a domain-specific execution engine.',partnership:{why:'Cisco should partner with Stripe because many journeys end in a payment, refund, or billing action. Stripe provides the execution step that turns a conversation into an outcome.',combined:'Stripe executes the transaction. Cisco orchestrates the journey to it.',specifics:['Collect payment during a support or sales interaction.','Trigger refunds or billing resolution inside service flows.','Use Stripe events as signals back into CX workflows.','Enable seamless handoff between AI, agent, and payment step.'],positioning:'Stripe is a system of execution. Cisco should make that execution effortless inside the interaction.',compete:'There is limited direct competition. The overlap is mostly around who owns the customer journey around payment rather than payment execution itself.',gtm:'Best motion is embedding Stripe-powered payment and billing completion inside Cisco-led service and sales journeys.'}},
+  docusign:{title:'DocuSign',body:'DocuSign is a system of execution for agreement workflows. It manages signature collection, approvals, document completion, and contract finalization.',partnership:{why:'Cisco should partner with DocuSign because many sales and service journeys culminate in an agreement step. The interaction should flow directly into signature and completion without losing context.',combined:'DocuSign completes the agreement. Cisco gets the customer there smoothly.',specifics:['Move from guided conversation to signed agreement.','Support agent-assisted and AI-assisted completion flows.','Use document status as a live signal in the journey.','Reduce drop-off between conversation and contract completion.'],positioning:'DocuSign is the fulfillment step for agreements. Cisco should orchestrate the lead-up and follow-through.',compete:'Competition is minimal at the execution layer; the overlap is in who owns the digital journey before and after agreement completion.',gtm:'Joint motion fits sales, onboarding, and service scenarios where agreement completion is the final mile of the interaction.'}},
+  shopify:{title:'Shopify',body:'Shopify is a commerce platform that manages storefronts, orders, product catalogs, carts, and commerce workflows. For many brands it is a core execution layer for transactional customer journeys.',partnership:{why:'Cisco should partner with Shopify because commerce interactions often require order visibility, cart support, returns, and transactional completion within the customer journey.',combined:'Shopify executes commerce flows. Cisco orchestrates customer interaction around them.',specifics:['Use Shopify data for order status, returns, and cart context.','Enable service journeys that resolve commerce issues in-channel.','Support AI and agent-assisted buying, support, and recovery flows.','Connect commerce execution back into broader customer experience orchestration.'],positioning:'Shopify owns commerce execution. Cisco should own the interaction layer around commerce.',compete:'Overlap is limited; the main competition is over who shapes the end-to-end commerce experience rather than the commerce engine itself.',gtm:'Best motion is with retail and digital commerce brands that need richer service and AI-led customer journeys around Shopify.'}},
+  twilio:{title:'Twilio',body:'Twilio is a communications platform that provides messaging, voice, email, and programmable customer engagement capabilities. It can appear as both a channel enabler and a domain execution platform for communications workflows.',partnership:{why:'Cisco should partner with Twilio where customers already use Twilio for communications infrastructure or messaging workflows and need broader enterprise orchestration on top.',combined:'Twilio provides communications building blocks. Cisco provides enterprise-grade interaction orchestration.',specifics:['Leverage existing Twilio messaging or channel infrastructure.','Layer Cisco orchestration, AI, and workforce capabilities above communications primitives.','Support customers with mixed CPaaS and CCaaS estates.','Use partnership selectively where Twilio is entrenched in digital channels.'],positioning:'Twilio may provide the plumbing; Cisco should own the interaction experience and control layer.',compete:'There is direct overlap in communications, messaging, and customer engagement platform ambitions.',gtm:'Joint motion is selective and situational, mainly where Twilio is already embedded and Cisco can expand the experience and orchestration story.'}},
+  paypal:{title:'PayPal',body:'PayPal is a payment and checkout platform used for transaction execution, wallet-based payments, and merchant services. In the stack it is a system of execution for payment completion.',partnership:{why:'Cisco should partner with PayPal where customers depend on it for transaction completion and need to embed payment outcomes seamlessly into support or sales journeys.',combined:'PayPal completes payment steps. Cisco brings them into the interaction flow.',specifics:['Support bill pay, checkout, and payment exception journeys.','Use payment completion as part of end-to-end service resolution.','Reduce abandonment between conversation and transaction.','Integrate payment state back into CX workflows.'],positioning:'PayPal is a payment engine. Cisco should orchestrate the experience around it.',compete:'Very limited direct competition. The main overlap is in who owns the broader journey surrounding the transaction.',gtm:'Best motion is around customer service and commerce scenarios where payment completion is part of issue resolution or conversion.'}},
+  square:{title:'Square',body:'Square is a commerce and payments platform spanning payment acceptance, point-of-sale, invoicing, and merchant workflows. It acts as a transaction and merchant operations engine.',partnership:{why:'Cisco should partner with Square where merchants use it as their commerce and payment backbone and need better customer engagement, support, and transaction assistance.',combined:'Square executes merchant transactions. Cisco improves the customer and agent interaction around them.',specifics:['Support merchant-facing service and payment exception flows.','Use Square data for transaction and order context.','Enable voice, messaging, and AI support around merchant workflows.','Position Cisco as enhancing merchant experience rather than replacing commerce infrastructure.'],positioning:'Square powers merchant transactions. Cisco can power merchant and customer interactions around them.',compete:'Direct overlap is low, aside from adjacent engagement experiences.',gtm:'Go to market in merchant-heavy verticals where transaction context must flow directly into support or engagement experiences.'}},
+  epic:{title:'EPIC',body:'EPIC is an industry core system in healthcare. It manages patient records, clinical workflows, scheduling, documentation, and regulated operational state.',partnership:{why:'Cisco should partner with EPIC because EPIC is deeply embedded, highly regulated, and central to care delivery. It should never be replaced by CX; it should be activated through better interactions.',combined:'EPIC holds the truth. Cisco activates it.',specifics:['Use EPIC data to personalize patient interactions.','Trigger scheduling, follow-up, and workflow steps from CX.','Respect EPIC as the system of truth for healthcare operations.','Enable better patient and staff experiences without disrupting core workflows.'],positioning:'EPIC is the system of care. Cisco is the system of interaction.',compete:'Cisco should avoid trying to compete at the clinical system layer. The opportunity is entirely complementary.',gtm:'The motion is vertical-specific: partner around patient access, service, scheduling, and staff interaction experiences on top of EPIC.'}},
+  cerner:{title:'Cerner',body:'Cerner is a healthcare information system platform used for clinical records, workflows, and care operations. Like EPIC, it functions as an industry core system in regulated healthcare environments.',partnership:{why:'Cisco should partner with Cerner for the same reason it should partner with EPIC: the value is not replacing the system of care, but creating better patient and staff interactions around it.',combined:'Cerner manages clinical and operational truth. Cisco manages the interaction layer.',specifics:['Pull patient and scheduling context into interactions.','Support care coordination, access, and follow-up workflows.','Enable staff and patient experiences on top of existing healthcare systems.','Respect healthcare workflow and compliance boundaries.'],positioning:'Cerner is the healthcare core. Cisco should be the interaction and orchestration layer around it.',compete:'Direct competition is not the right posture here; this should be treated as a complementary vertical ecosystem relationship.',gtm:'Target providers that need better patient access, service, and communication experiences without changing core health systems.'}},
+  guidewire:{title:'Guidewire',body:'Guidewire is an insurance core platform supporting policy, billing, claims, and underwriting workflows. It is an industry core system for insurers.',partnership:{why:'Cisco should partner with Guidewire because insurers rely on it for their most important operational workflows, and customer or agent interactions must connect to that system cleanly.',combined:'Guidewire runs insurance operations. Cisco orchestrates the interaction layer across them.',specifics:['Use Guidewire data in claims, policy, and service conversations.','Support contact center and digital interactions tied to insurance workflows.','Enable AI and agent experiences that work with existing policy and claims systems.','Avoid any rip-and-replace posture in regulated insurance environments.'],positioning:'Guidewire is the insurance core. Cisco should make it easier to interact with.',compete:'Cisco should not compete at the insurance core layer; its value is complementary interaction orchestration.',gtm:'Best motion is vertical selling into insurers where Guidewire is already strategic and customer experience modernization is a priority.'}},
+  temenos:{title:'Temenos',body:'Temenos is a banking platform supporting core banking operations, accounts, payments, and financial workflows. It is an industry core system for banks and financial institutions.',partnership:{why:'Cisco should partner with Temenos because banks depend on it for core operational truth and execution, while customers still need modern interaction and service experiences around those workflows.',combined:'Temenos runs banking operations. Cisco modernizes the interaction layer around them.',specifics:['Expose account and service context in banking interactions.','Support assisted and AI-led service journeys tied to core banking systems.','Enable secure, compliant engagement around sensitive workflows.','Position Cisco as additive to banking modernization rather than disruptive to core platforms.'],positioning:'Temenos is the banking core. Cisco should own the engagement layer above it.',compete:'Direct competition is not the issue; the concern is whether Cisco can integrate and add value without threatening the core platform.',gtm:'Best motion is with banks modernizing customer service and digital engagement while retaining existing core banking systems.'}},
+  uipath:{title:'UiPath',body:'UiPath is an automation platform that executes work across legacy and modern systems. It handles task automation, workflow automation, and robotic process automation where APIs are weak or absent.',partnership:{why:'Cisco should partner with UiPath because automation is the execution layer behind many customer outcomes. AI without fulfillment is a demo; UiPath helps turn CX into action.',combined:'UiPath executes the work. Cisco invokes it at the right moment.',specifics:['Use UiPath to complete back-office tasks triggered from interactions.','Enable both human and AI agents to invoke workflows.','Extend CX value into legacy environments where APIs are weak or absent.','Measure partnership value through completion and time-to-resolution.'],positioning:'UiPath is the execution engine. Cisco should be the invocation layer.',compete:'Some overlap exists if UiPath pushes upward into agentic front-end experiences. Cisco should stay anchored in interaction control and orchestration.',gtm:'Joint motion is strongest in enterprises with heavy back-office automation estates where CX can trigger real fulfillment.'}},
+  'automation-anywhere':{title:'Automation Anywhere',body:'Automation Anywhere is an enterprise automation platform for RPA, workflow automation, and process execution across business and legacy systems.',partnership:{why:'Cisco should partner with Automation Anywhere because it provides the fulfillment layer many interactions eventually require, particularly in large enterprises with established automation programs.',combined:'Automation Anywhere executes tasks. Cisco orchestrates when those tasks are invoked in the customer journey.',specifics:['Trigger automation from AI and human-assisted interactions.','Extend interaction value into back-office fulfillment.','Use existing enterprise automation investments rather than replacing them.','Position Cisco as the customer-facing control point over execution layers.'],positioning:'Automation Anywhere is part of the fulfillment engine. Cisco should become the interaction-driven invocation layer.',compete:'Overlap may emerge if automation vendors push higher into front-end agentic experiences.',gtm:'Best motion is in accounts with mature automation programs where customer-facing journeys need tighter linkage to fulfillment.'}},
+  'blue-prism':{title:'Blue Prism',body:'Blue Prism is an automation platform used for robotic process automation and controlled enterprise task execution, often in highly governed environments.',partnership:{why:'Cisco should partner with Blue Prism where customers already trust it for governed task execution and need customer interactions to trigger those workflows.',combined:'Blue Prism handles governed execution. Cisco turns conversations into execution requests.',specifics:['Trigger governed task completion from service interactions.','Use Blue Prism where risk and compliance matter in automation.','Bridge customer interaction with back-office execution systems.','Avoid trying to replace entrenched automation estates.'],positioning:'Blue Prism executes the process. Cisco should own the interaction that leads to it.',compete:'Competition is limited unless Blue Prism expands materially into customer-facing orchestration.',gtm:'Joint motion fits regulated or process-heavy enterprises with existing automation governance models.'}},
+  pega:{title:'Pega',body:'Pega spans workflow, decisioning, case management, and automation. It can show up as both a process engine and a customer engagement decisioning platform.',partnership:{why:'Cisco should partner with Pega where it already underpins decisioning and workflow logic, especially in complex service environments.',combined:'Pega manages process and decision flows. Cisco manages the live conversation and interaction journey.',specifics:['Feed interaction signals into Pega case and decision workflows.','Use Pega for complex guided process handling behind the scenes.','Allow Cisco to own the interaction while Pega handles process logic.','Avoid duplicating case orchestration where Pega is already strong.'],positioning:'Pega is the process brain in many enterprises. Cisco should be the real-time interaction layer around it.',compete:'There can be meaningful overlap in orchestration, decisioning, and engagement, so positioning must be careful.',gtm:'Best motion is in enterprises where Pega is already strategic and Cisco can improve front-end interaction quality and omnichannel execution.'}},
+  'power-automate':{title:'Power Automate',body:'Power Automate is Microsoft’s workflow and automation platform spanning SaaS automation, business process automation, and some RPA capabilities.',partnership:{why:'Cisco should recognize Power Automate because it is embedded in Microsoft estates and often used for operational workflow execution.',combined:'Power Automate executes Microsoft-centric workflows. Cisco should invoke or orchestrate around them inside interactions.',specifics:['Trigger Microsoft-centric workflows from customer or employee interactions.','Coexist with broader automation estates rather than forcing replacement.','Position Cisco as the invocation and orchestration layer over workflow execution.','Use Microsoft alignment to lower friction in existing accounts.'],positioning:'Power Automate is part of the execution layer. Cisco should stay focused on interaction-led orchestration.',compete:'Overlap exists where Microsoft extends workflow into broader agentic or customer-facing process experiences.',gtm:'Strongest motion is in Microsoft-standardized accounts where workflow completion needs to connect to interaction flows.'}},
+  snowflake:{title:'Snowflake',body:'Snowflake is a cloud data platform used for warehousing, analytics, data sharing, and increasingly AI data preparation. In the stack it is part of the data and context layer.',partnership:{why:'Cisco should partner with Snowflake because it often houses important enterprise data needed to enrich interactions, personalize journeys, and analyze outcomes.',combined:'Snowflake stores and serves context. Cisco activates it at interaction time.',specifics:['Use Snowflake data to enrich customer and operational context.','Feed interaction outcomes back into enterprise analytics.','Support personalization and next-best-action models with shared data.','Respect that data platforms remain systems of analysis and context, not interaction engines.'],positioning:'Snowflake is where context lives. Cisco should make that context actionable in real time.',compete:'Direct competition is low; the risk is only if Cisco overclaims on data platform ownership.',gtm:'Joint motion works where customers want to operationalize enterprise data inside service, sales, or engagement workflows.'}},
+  databricks:{title:'Databricks',body:'Databricks is a data and AI platform used for large-scale data engineering, analytics, machine learning, and enterprise AI preparation. It is a major context layer platform.',partnership:{why:'Cisco should partner with Databricks because many enterprises use it to prepare, model, and operationalize data that can enrich customer interactions.',combined:'Databricks prepares and governs data and AI assets. Cisco brings those assets into interactions.',specifics:['Use Databricks outputs to enrich service and engagement decisions.','Connect AI-ready data pipelines to interaction use cases.','Leverage customer investments in lakehouse and ML programs.','Keep Cisco focused on interaction runtime, not data platform replacement.'],positioning:'Databricks powers data and AI readiness. Cisco should power the live interaction using that readiness.',compete:'Direct competition is limited; this is largely complementary.',gtm:'Best motion is with customers trying to connect enterprise AI and data programs to measurable front-line experience outcomes.'}},
+  segment:{title:'Segment',body:'Segment is a customer data platform used for collecting, unifying, and routing customer event data across marketing, product, and engagement systems.',partnership:{why:'Cisco should partner with Segment where customer event and profile data are already being unified and routed across digital systems.',combined:'Segment unifies customer event data. Cisco turns that data into better interactions.',specifics:['Use profile and event streams to personalize service and engagement.','Bring digital behavior context into voice and conversational channels.','Write interaction outcomes back into profile and event ecosystems.','Avoid duplicating CDP functions where customers already invested.'],positioning:'Segment connects customer signals. Cisco should connect those signals to interactions.',compete:'Overlap is low, mainly around adjacent journey orchestration and engagement logic.',gtm:'Best motion is in digitally mature accounts where event-level customer context can materially improve experience design.'}},
+  tealium:{title:'Tealium',body:'Tealium is a customer data and event orchestration platform used to unify profile data, govern customer signals, and activate them across channels.',partnership:{why:'Cisco should partner with Tealium because it can provide governed customer context that improves personalization and continuity across channels.',combined:'Tealium governs and activates customer data. Cisco applies it inside live interactions.',specifics:['Use Tealium profiles and events to enrich conversations.','Coordinate digital and assisted channels more effectively.','Feed interaction outcomes back into unified profile systems.','Position Cisco as complementary to the customer data layer rather than a replacement.'],positioning:'Tealium manages customer signal activation. Cisco should manage customer interaction activation.',compete:'Competition is limited, though both may influence journey logic.',gtm:'Joint motion fits customers focused on cross-channel personalization and signal-driven engagement.'}},
+  fabric:{title:'Fabric',body:'Fabric is Microsoft’s data platform spanning analytics, data engineering, warehousing, and unified data experiences. It is part of the data and context layer.',partnership:{why:'Cisco should account for Fabric because it can become a major source of enterprise context in Microsoft-standardized environments.',combined:'Fabric manages and serves enterprise context. Cisco should activate that context during interactions.',specifics:['Leverage Microsoft-native data contexts in customer journeys.','Connect interaction outcomes back to enterprise data environments.','Avoid making Cisco look like a competing data platform.','Use Fabric compatibility as part of the broader Microsoft positioning story.'],positioning:'Fabric is the context layer in many Microsoft estates. Cisco should make that context actionable.',compete:'Competition is indirect and mostly arises if Cisco overstates ownership of the data layer.',gtm:'Best motion is to show how Cisco operationalizes Microsoft data investments in front-line experiences.'}},
+  openai:{title:'OpenAI',body:'OpenAI provides foundational model capabilities for reasoning, generation, summarization, and conversational intelligence. It is part of the intelligence layer, not the whole solution.',partnership:{why:'Cisco should partner with OpenAI because model innovation is moving quickly and customers want optionality. Cisco benefits by staying model-agnostic and adding the enterprise control plane around the model.',combined:'OpenAI provides intelligence. Cisco provides the enterprise runtime around it.',specifics:['Use models selectively by task and channel.','Add governance, observability, and routing above the model.','Blend model output with enterprise context and policy.','Maintain flexibility as model performance and economics change.'],positioning:'Models matter, but enterprise control matters more.',compete:'The overlap is around who owns the application experience. Cisco should avoid being perceived as just a thin wrapper around the model.',gtm:'Go to market around enterprise outcomes, governance, and orchestration rather than just model access.'}},
+  anthropic:{title:'Anthropic',body:'Anthropic provides foundational models focused on reasoning, safety, and enterprise-aligned language intelligence. It is part of the intelligence layer that CX can draw from.',partnership:{why:'Cisco should partner with Anthropic to preserve model optionality and align with customers that value strong reasoning and safety characteristics in enterprise AI.',combined:'Anthropic provides model intelligence. Cisco makes it usable inside enterprise interactions.',specifics:['Support multi-model strategies across enterprise use cases.','Route tasks to models based on need and governance.','Blend Anthropic outputs with enterprise context and workflow.','Keep Cisco positioned as the control plane over model choice.'],positioning:'Model optionality strengthens Cisco’s platform story.',compete:'Minimal direct competition; the main risk is reducing Cisco to a pass-through interface.',gtm:'Lead with enterprise-grade orchestration and governance rather than promoting a single model partner.'}},
+  gemini:{title:'Google Gemini',body:'Google Gemini is Google’s model family for reasoning, multimodal AI, and generative intelligence. In the stack it belongs to the AI layer and is often tied to Google Cloud environments.',partnership:{why:'Cisco should partner with Google Gemini where customers are already invested in Google Cloud or want access to Google’s AI strengths without replatforming their CX stack.',combined:'Gemini provides intelligence. Cisco provides the interaction and orchestration runtime around it.',specifics:['Support Google Cloud-aligned customers with model optionality.','Use Gemini where multimodal or Google ecosystem alignment is valuable.','Keep Cisco positioned above the model layer.','Avoid forcing customers into a single-model strategy.'],positioning:'Gemini is part of the intelligence layer. Cisco should remain the control and experience layer above it.',compete:'Competition is limited at the model layer, but broader Google platform ambitions can overlap indirectly.',gtm:'Best motion is through heterogeneous AI positioning: Cisco works with Google AI where customers want it, without locking the stack.'}},
+  deepgram:{title:'Deepgram',body:'Deepgram provides speech recognition, voice intelligence, and audio AI capabilities. It is a specialized intelligence partner in the voice and conversation stack.',partnership:{why:'Cisco should partner with Deepgram because voice quality, transcription, and speech intelligence can materially affect CX performance and AI effectiveness.',combined:'Deepgram powers specialized speech intelligence. Cisco embeds it into the broader interaction system.',specifics:['Improve transcription and voice AI quality in service interactions.','Use speech intelligence as part of routing, summarization, and quality flows.','Stay modular by using best-of-breed voice partners where they outperform general models.','Keep Cisco in control of orchestration and experience design.'],positioning:'Deepgram specializes in speech. Cisco should specialize in turning speech into outcomes.',compete:'Overlap is mostly indirect through adjacent voice AI capabilities.',gtm:'Joint motion fits customers where voice quality and speech performance are mission-critical differentiators.'}},
+  'azure-openai':{title:'Azure OpenAI',body:'Azure OpenAI brings foundational model capabilities into Microsoft’s cloud environment and governance model. It is part of the intelligence layer for Microsoft-centric enterprises.',partnership:{why:'Cisco should account for Azure OpenAI because many customers will prefer to consume model capabilities through Microsoft’s enterprise controls and cloud relationships.',combined:'Azure OpenAI provides model intelligence through Microsoft. Cisco provides the interaction runtime and control plane around it.',specifics:['Support customers that prefer Microsoft-governed model access.','Stay model-agnostic while integrating Azure-based AI services.','Position Cisco above the model layer with orchestration and governance.','Avoid forcing direct-model choices when enterprise buyers prefer cloud-native procurement.'],positioning:'Azure OpenAI is still part of the model layer. Cisco should remain the enterprise interaction and orchestration layer above it.',compete:'Competition is mostly indirect, through Microsoft’s broader full-stack story.',gtm:'Use Azure OpenAI compatibility to strengthen Cisco’s position in Microsoft-led AI estates.'}},
+  adept:{title:'Adept',body:'Adept builds AI agents focused on task execution across software tools.',partnership:{why:'Cisco should integrate execution agents into CX.',combined:'Adept executes tasks. Cisco orchestrates.',specifics:['Invoke tasks from conversations.','Bridge CX and execution.','Enable multi-agent flows.','Maintain orchestration control.'],positioning:'Execution agents plug into Cisco.',compete:'Overlap if agents move into orchestration.',gtm:'Position Cisco as aggregator of agents.'}},
+  mulesoft:{title:'MuleSoft',body:'MuleSoft is an integration platform. It connects applications, APIs, and data across systems, enabling data movement, synchronization, and event flow between enterprise platforms.',partnership:{why:'Cisco should partner with MuleSoft because integration is already entrenched in many enterprises. Cisco does not need to replace that layer; it needs to leverage it and sit above it.',combined:'MuleSoft moves data. Cisco orchestrates interactions using that data.',specifics:['Use MuleSoft for connectivity to systems of record and execution.','Bring integration outputs into CX journeys in real time.','Avoid rebuilding generic integration capabilities inside CX.','Differentiate at the orchestration layer, not the connectivity layer.'],positioning:'Integration tells you what to do. CX should decide and act in the interaction.',compete:'There is some overlap if Cisco overextends into generic integration. The cleaner story is partnership below the CX orchestration layer.',gtm:'Joint motion works in accounts where MuleSoft already connects the stack and Cisco can accelerate value at the interaction layer.'}},
+  boomi:{title:'Boomi',body:'Boomi is an integration and automation platform used to connect applications, data, and workflows across enterprise systems. It sits in the connectivity layer.',partnership:{why:'Cisco should partner with Boomi where it already serves as the enterprise’s connective tissue between systems and processes.',combined:'Boomi connects systems. Cisco activates those systems during interactions.',specifics:['Use Boomi for established connectivity patterns.','Avoid duplicating generic integration capabilities.','Focus Cisco differentiation on conversation-aware orchestration.','Accelerate time to value by working with existing integration estates.'],positioning:'Boomi handles the connective tissue. Cisco should handle the live orchestration layer.',compete:'Competition is limited unless Cisco tries to become a broad integration platform.',gtm:'Best motion is in enterprises with Boomi already deployed, where Cisco can layer on interaction-driven orchestration.'}},
+  workato:{title:'Workato',body:'Workato is an integration and workflow automation platform that connects SaaS applications, APIs, and business processes. It can bridge both integration and light automation use cases.',partnership:{why:'Cisco should partner with Workato where customers use it for app-to-app workflow automation and need those flows surfaced inside customer or employee interactions.',combined:'Workato automates cross-app workflows. Cisco brings those workflows into real-time interactions.',specifics:['Use Workato to trigger and coordinate SaaS workflows from CX.','Support fast time-to-value in SaaS-heavy environments.','Avoid rebuilding app-to-app automation patterns already handled by Workato.','Position Cisco as the front-end orchestration layer above cross-app workflow execution.'],positioning:'Workato automates across apps. Cisco should activate those workflows through interactions.',compete:'Moderate overlap exists where workflow tools expand into front-end agentic experiences.',gtm:'Good motion in SaaS-centric enterprises that want interaction-triggered workflow completion without replacing their integration estate.'}},
+  zapier:{title:'Zapier',body:'Zapier is a no-code integration and automation platform that connects SaaS applications and enables simple workflow automation across tools. It is commonly used in SMB and mid-market environments as a lightweight integration layer.',partnership:{why:'Cisco should partner with Zapier because it is often the de facto integration layer in SaaS-heavy, mid-market environments where customers need fast, low-code connectivity.',combined:'Zapier connects SaaS apps and automates simple workflows. Cisco brings those workflows into real-time customer and employee interactions.',specifics:['Trigger Zapier workflows from CX interactions (e.g., ticket creation, notifications, updates).','Leverage existing Zapier integrations instead of rebuilding app connectivity.','Enable fast time-to-value in SMB and digital-native environments.','Position Cisco as the interaction layer that activates Zapier workflows.'],positioning:'Zapier is the lightweight integration fabric. Cisco should be the orchestration layer above it.',compete:'Overlap is limited but can emerge if Zapier expands into more complex workflow orchestration or front-end automation experiences.',gtm:'Strong motion in SMB and mid-market accounts where Zapier is already embedded and customers want to layer richer CX and AI capabilities on top.'}},
+  
+  'logic-apps':{title:'Logic Apps',body:'Logic Apps is Microsoft’s integration and workflow orchestration service for connecting applications, APIs, and processes. It sits in the integration layer.',partnership:{why:'Cisco should recognize Logic Apps because many Microsoft-centric enterprises already use it as part of their integration backbone.',combined:'Logic Apps connects Microsoft-oriented systems and workflows. Cisco should sit above that layer and orchestrate interactions using it.',specifics:['Leverage Logic Apps where it is already the integration fabric.','Avoid rebuilding generic Microsoft-centric connectivity.','Focus Cisco’s value on interaction-aware orchestration rather than plumbing.','Use Microsoft alignment to simplify enterprise architecture discussions.'],positioning:'Logic Apps handles connectivity. Cisco should handle live interaction orchestration.',compete:'Competition is limited unless Cisco tries to posture as a broad integration platform inside Microsoft-heavy accounts.',gtm:'Strongest motion is coexistence in accounts already using Azure integration services.'}},
+  cisco:{title:'Cisco',body:'Cisco provides the interaction layer, orchestration layer, and trust foundation across the stack. Its strength is not replacing every adjacent platform, but making them work together in real time.',partnership:{why:'Cisco should position itself as the cross-stack orchestrator. The right to win comes from front-door control, conversation continuity, trust, security, and observability.',combined:'Cisco does not need to own every layer. It needs to activate them together.',specifics:['Own the interaction surface and conversation flow.','Leverage ecosystem partners for record, execution, and data depth.','Differentiate through orchestration, governance, and trust.','Use infrastructure and security strength as a credible advantage.'],positioning:'Cisco is the runtime across the stack.',compete:'Cisco will inevitably compete with horizontal and vertical platform players that want to own more of the stack.',gtm:'Lead with heterogeneous enterprise reality: Cisco makes existing stacks work together rather than forcing standardization on one platform.'}},
+  splunk:{title:'Splunk',body:'Splunk is an observability and security data platform used to monitor systems, detect issues, analyze telemetry, and improve operational visibility. It sits in the trust and observability foundation.',partnership:{why:'Cisco should leverage Splunk because it strengthens the story around trust, observability, monitoring, and AI operations across the stack.',combined:'Splunk provides deep visibility. Cisco uses that visibility to make CX and AI more trustworthy.',specifics:['Use observability to monitor CX and AI operations.','Surface operational insights that improve resilience and quality.','Strengthen the trust and enterprise-readiness narrative.','Connect interaction outcomes with operational telemetry.'],positioning:'Splunk helps prove enterprise-grade reliability. Cisco can translate that into trust at the interaction layer.',compete:'Direct competition is minimal; this is a strategic internal-strength-plus-ecosystem story.',gtm:'Go to market by making observability and trust visible as differentiators in enterprise AI and CX conversations.'}},
+  aws:{title:'AWS',body:'AWS is a horizontal cloud platform spanning infrastructure, data, AI, analytics, and application services. In many enterprises it is a foundational environment across multiple layers of the stack.',partnership:{why:'Cisco should partner with AWS because many customers run critical workloads, data estates, and AI services there. Cisco needs to work across AWS-heavy environments without forcing replatforming.',combined:'AWS provides horizontal cloud services. Cisco orchestrates interaction and experience across them.',specifics:['Support AWS-hosted data and application estates.','Position Cisco as interoperable in multi-cloud and AWS-led accounts.','Use AWS alignment as enterprise credibility, not as a replacement stack story.','Keep Cisco focused on interaction and orchestration, not cloud platform duplication.'],positioning:'AWS spans the stack. Cisco should orchestrate across it rather than compete on every layer.',compete:'Competition exists where AWS expands upward into contact center, AI, and adjacent service layers.',gtm:'Best motion is to make Cisco the strongest interaction and orchestration layer for customers already invested in AWS.'}},
+  azure:{title:'Azure',body:'Azure is a horizontal platform spanning infrastructure, data, integration, and AI services. In many enterprises it is part of the foundational environment that CX must work across.',partnership:{why:'Cisco should partner with Azure because customers already run critical workloads, data estates, and AI services there. Cisco’s value is interoperability, not forcing a rip-and-replace motion.',combined:'Azure provides horizontal platform services. Cisco orchestrates customer interactions across them.',specifics:['Use Azure-hosted data and AI services where customers already standardize there.','Ensure CX works cleanly across Microsoft-heavy environments.','Position Cisco as heterogeneous and cross-stack by design.','Use Azure compatibility as part of enterprise credibility.'],positioning:'Microsoft plays across the stack. Cisco should orchestrate across all stacks.',compete:'Competition exists because Microsoft spans apps, automation, AI, integration, and infrastructure. Cisco should avoid fighting Microsoft on every layer.',gtm:'Go to market as the best interaction and orchestration layer for Microsoft-heavy enterprises rather than as a replacement stack.'}},
+  gcp:{title:'GCP',body:'Google Cloud Platform is a horizontal cloud and AI platform spanning infrastructure, data, analytics, and machine learning services. It appears in the foundation and intelligence layers of many modern stacks.',partnership:{why:'Cisco should partner with GCP where customers use Google for data, AI, or cloud workloads and want those assets reflected in their interaction and service experiences.',combined:'GCP provides cloud and AI capabilities. Cisco turns them into interaction outcomes.',specifics:['Support GCP-hosted data and AI environments.','Position Cisco as multi-cloud and open by design.','Use GCP compatibility to strengthen credibility in AI-forward accounts.','Keep differentiation centered on interaction runtime, not cloud ownership.'],positioning:'Google may provide cloud and AI services. Cisco should provide the orchestration layer above them.',compete:'Competition is indirect unless Google pushes more aggressively into end-to-end interaction ownership.',gtm:'Best motion is in AI-forward or data-rich accounts where Google Cloud is strategic but customer interaction remains fragmented.'}}
+};
+
+const layerEls = [...document.querySelectorAll('.layer')];
+const badgeEls = [...document.querySelectorAll('.badge')];
+const layerDetail = document.getElementById('layer-detail');
+const vendorDetail = document.getElementById('vendor-detail');
+const partnerDetail = document.getElementById('partner-detail');
+const competeDetail = document.getElementById('compete-detail');
+const gtmDetail = document.getElementById('gtm-detail');
+const msftToggle = document.getElementById('msft-toggle');
+
+function renderLayer(layerKey) {
+  const info = layerData[layerKey];
+  if (!info) return;
+  layerDetail.innerHTML = `<div class="detail-title">${info.title}</div><p>${info.body}</p>`;
+  layerEls.forEach(el => el.classList.toggle('active', el.dataset.layer === layerKey));
+}
+
+function renderVendor(vendorKey, badge) {
+  const info = vendorData[vendorKey];
+  if (!info) return;
+  vendorDetail.innerHTML = `<div class="detail-title">${info.title}</div><p>${info.body}</p>`;
+  partnerDetail.innerHTML = `
+    <div class="detail-title">Why partner</div>
+    <p>${info.partnership.why}</p>
+    <div class="detail-title">Combined value</div>
+    <p>${info.partnership.combined}</p>
+    <div class="detail-title">What this enables</div>
+    <ul>${info.partnership.specifics.map(item => `<li>${item}</li>`).join('')}</ul>
+    <div class="detail-title">Positioning</div>
+    <p>${info.partnership.positioning}</p>
+  `;
+  competeDetail.innerHTML = `<p>${info.partnership.compete}</p>`;
+  gtmDetail.innerHTML = `<p>${info.partnership.gtm}</p>`;
+  badgeEls.forEach(el => el.classList.remove('selected'));
+  if (badge) badge.classList.add('selected');
+}
+
+layerEls.forEach(layer => {
+  layer.addEventListener('click', (e) => {
+    if (e.target.classList.contains('badge')) return;
+    renderLayer(layer.dataset.layer);
+  });
+});
+
+badgeEls.forEach(badge => {
+  badge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const parentLayer = badge.closest('.layer');
+    if (parentLayer) renderLayer(parentLayer.dataset.layer);
+    renderVendor(badge.dataset.vendor, badge);
+  });
+});
+
+if (msftToggle) {
+  msftToggle.addEventListener('change', () => {
+    document.body.classList.toggle('msft-on', msftToggle.checked);
+    document.querySelectorAll('.msft-badge').forEach(el => el.classList.toggle('msft-highlight', msftToggle.checked));
+  });
+}
+
+renderLayer('applications');
+const defaultBadge = document.querySelector('.badge[data-vendor="salesforce"]');
+if (defaultBadge) renderVendor('salesforce', defaultBadge);
+</script>
+</body>
+</html>
